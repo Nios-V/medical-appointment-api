@@ -1,26 +1,65 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Appointment } from './entities/appointment.entity';
+import { DeleteResult, Repository } from 'typeorm';
 
 @Injectable()
 export class AppointmentsService {
-  create(createAppointmentDto: CreateAppointmentDto) {
-    return 'This action adds a new appointment';
+  constructor(
+    @InjectRepository(Appointment)
+    private appointmentRepository: Repository<Appointment>,
+  ) {}
+
+  async create(
+    createAppointmentDto: CreateAppointmentDto,
+  ): Promise<Appointment> {
+    const newAppointment =
+      this.appointmentRepository.create(createAppointmentDto);
+    return await this.appointmentRepository.save(newAppointment);
   }
 
-  findAll() {
-    return `This action returns all appointments`;
+  async findAll(): Promise<Appointment[]> {
+    return await this.appointmentRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} appointment`;
+  async findOne(id: string): Promise<Appointment> {
+    const appointment = await this.appointmentRepository.findOne({
+      where: { id },
+    });
+    if (!appointment)
+      throw new NotFoundException(`Appointment not found with ID ${id}`);
+    return appointment;
   }
 
-  update(id: number, updateAppointmentDto: UpdateAppointmentDto) {
-    return `This action updates a #${id} appointment`;
+  async update(id: string, updateAppointmentDto: UpdateAppointmentDto) {
+    const appointment = await this.appointmentRepository.findOne({
+      where: { id },
+    });
+
+    if (!appointment)
+      throw new NotFoundException(
+        `Appointment not found with ID ${id} for Update`,
+      );
+
+    const updated = this.appointmentRepository.merge(
+      appointment,
+      updateAppointmentDto,
+    );
+    return await this.appointmentRepository.save(updated);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} appointment`;
+  async remove(id: string): Promise<DeleteResult> {
+    const appointment = await this.appointmentRepository.findOne({
+      where: { id },
+    });
+
+    if (!appointment)
+      throw new NotFoundException(
+        `Appointment not found with ID ${id} for delete`,
+      );
+
+    return await this.appointmentRepository.softDelete(id);
   }
 }

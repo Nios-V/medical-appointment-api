@@ -1,26 +1,49 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePatientDto } from './dto/create-patient.dto';
 import { UpdatePatientDto } from './dto/update-patient.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Patient } from './entities/patient.entity';
+import { DeleteResult, Repository } from 'typeorm';
 
 @Injectable()
 export class PatientsService {
-  create(createPatientDto: CreatePatientDto) {
-    return 'This action adds a new patient';
+  constructor(
+    @InjectRepository(Patient)
+    private patientRepository: Repository<Patient>,
+  ) {}
+
+  async create(createPatientDto: CreatePatientDto): Promise<Patient> {
+    const newPatient = this.patientRepository.create(createPatientDto);
+    return await this.patientRepository.save(newPatient);
   }
 
-  findAll() {
-    return `This action returns all patients`;
+  async findAll(): Promise<Patient[]> {
+    return await this.patientRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} patient`;
+  async findOne(id: string): Promise<Patient> {
+    const patient = await this.patientRepository.findOne({ where: { id } });
+    if (!patient)
+      throw new NotFoundException(`Patient not found with ID ${id}`);
+    return patient;
   }
 
-  update(id: number, updatePatientDto: UpdatePatientDto) {
-    return `This action updates a #${id} patient`;
+  async update(
+    id: string,
+    updatePatientDto: UpdatePatientDto,
+  ): Promise<Patient> {
+    const patient = await this.patientRepository.findOne({ where: { id } });
+    if (!patient)
+      throw new NotFoundException(`Patient not found with ID ${id} for update`);
+
+    const updated = this.patientRepository.merge(patient, updatePatientDto);
+    return this.patientRepository.save(updated);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} patient`;
+  async remove(id: string): Promise<DeleteResult> {
+    const patient = await this.patientRepository.findOne({ where: { id } });
+    if (!patient)
+      throw new NotFoundException(`Patient not found with ID ${id} for delete`);
+    return await this.patientRepository.softDelete(id);
   }
 }
