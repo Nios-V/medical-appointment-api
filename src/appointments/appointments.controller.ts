@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
@@ -36,6 +37,11 @@ export class AppointmentsController {
     @Body() updateAppointmentDto: UpdateAppointmentDto,
   ) {
     return this.appointmentsService.update(id, updateAppointmentDto);
+  }
+
+  @Patch(':id/cancel')
+  cancel(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.appointmentsService.cancel(id);
   }
 
   @Delete(':id')

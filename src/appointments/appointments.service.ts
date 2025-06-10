@@ -1,9 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from './entities/appointment.entity';
-import { DeleteResult, Repository } from 'typeorm';
+import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 
 @Injectable()
 export class AppointmentsService {
@@ -48,6 +52,21 @@ export class AppointmentsService {
       updateAppointmentDto,
     );
     return await this.appointmentRepository.save(updated);
+  }
+
+  async cancel(id: string): Promise<Appointment> {
+    const appointment = await this.appointmentRepository.findOne({
+      where: { id },
+    });
+
+    if (!appointment) throw new NotFoundException('Appointment not found');
+
+    if (appointment.status === 'completed')
+      throw new BadRequestException('Cannot cancel a completed appointment');
+
+    appointment.status = 'canceled';
+
+    return this.appointmentRepository.save(appointment);
   }
 
   async remove(id: string): Promise<DeleteResult> {
