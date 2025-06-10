@@ -27,6 +27,21 @@ export class DoctorsService {
     return doctor;
   }
 
+  async findAvailableAt(scheduledAt: Date): Promise<Doctor[]> {
+    const start = new Date(scheduledAt);
+    const end = new Date(start.getTime() + 30 * 60 * 1000);
+    return this.doctorRepository
+      .createQueryBuilder('doctor')
+      .leftJoin(
+        'doctor.appointments',
+        'appointment',
+        `appointment.status = 'scheduled' AND appointment.scheduledAt >= :start AND appointment.scheduledAt < :end`,
+        { start, end },
+      )
+      .where('appointment.id IS NULL')
+      .getMany();
+  }
+
   async update(id: string, updateDoctorDto: UpdateDoctorDto): Promise<Doctor> {
     const doctor = await this.doctorRepository.findOne({ where: { id } });
     if (!doctor)

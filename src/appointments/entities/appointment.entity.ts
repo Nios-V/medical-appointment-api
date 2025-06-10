@@ -23,10 +23,10 @@ export class Appointment {
 
   @Column({
     type: 'enum',
-    enum: ['scheduled', 'completed', 'cancelled'],
+    enum: ['scheduled', 'completed', 'cancelled', 'missed'],
     default: 'scheduled',
   })
-  status: 'scheduled' | 'completed' | 'canceled';
+  status: 'scheduled' | 'completed' | 'canceled' | 'missed';
 
   @Column({ nullable: true })
   reason: string;

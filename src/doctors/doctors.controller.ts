@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
@@ -28,6 +29,16 @@ export class DoctorsController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.doctorsService.findOne(id);
+  }
+
+  @Get('available')
+  findAvailable(@Query('at') at: string) {
+    const date = new Date(at);
+
+    if (isNaN(date.getTime())) {
+      throw new Error('Invalid date format');
+    }
+    return this.doctorsService.findAvailableAt(date);
   }
 
   @Patch(':id')
