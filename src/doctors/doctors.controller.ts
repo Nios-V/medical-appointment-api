@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  BadRequestException,
 } from '@nestjs/common';
 import { DoctorsService } from './doctors.service';
 import { CreateDoctorDto } from './dto/create-doctor.dto';
@@ -26,19 +27,24 @@ export class DoctorsController {
     return this.doctorsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.doctorsService.findOne(id);
-  }
-
   @Get('available')
   findAvailable(@Query('at') at: string) {
     const date = new Date(at);
 
     if (isNaN(date.getTime())) {
-      throw new Error('Invalid date format');
+      throw new BadRequestException('Invalid date format');
     }
+
+    if (date.getTime() < new Date().getTime()) {
+      throw new BadRequestException('Invalid date: Past date');
+    }
+
     return this.doctorsService.findAvailableAt(date);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.doctorsService.findOne(id);
   }
 
   @Patch(':id')
