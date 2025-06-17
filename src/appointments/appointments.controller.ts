@@ -44,6 +44,11 @@ export class AppointmentsController {
     return this.appointmentsService.cancel(id);
   }
 
+  @Patch(':id/confirm')
+  confirm(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.appointmentsService.confirm(id);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.appointmentsService.remove(id);

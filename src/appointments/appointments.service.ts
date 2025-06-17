@@ -54,6 +54,21 @@ export class AppointmentsService {
     return await this.appointmentRepository.save(updated);
   }
 
+  async confirm(id: string) {
+    const appointment = await this.appointmentRepository.findOne({
+      where: { id },
+    });
+
+    if (!appointment)
+      throw new NotFoundException(
+        `Appointment with ID ${id} not found to confirm`,
+      );
+
+    appointment.isConfirmed = true;
+
+    return this.appointmentRepository.save(appointment);
+  }
+
   async cancel(id: string): Promise<Appointment> {
     const appointment = await this.appointmentRepository.findOne({
       where: { id },
