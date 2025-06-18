@@ -35,7 +35,7 @@ export class DoctorsService {
       .leftJoin(
         'doctor.appointments',
         'appointment',
-        `appointment.status = 'scheduled' AND appointment.scheduledAt >= :start AND appointment.scheduledAt < :end`,
+        `appointment.status = 'scheduled' AND appointment.scheduledAt >= :start AND appointment.scheduledAt <= :end`,
         { start, end },
       )
       .where('appointment.id IS NULL')

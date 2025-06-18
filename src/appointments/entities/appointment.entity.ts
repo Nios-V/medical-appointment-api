@@ -28,7 +28,7 @@ export class Appointment {
   })
   status: 'scheduled' | 'completed' | 'canceled' | 'missed';
 
-  @Column({ default: true })
+  @Column({ default: false })
   isConfirmed: boolean;
 
   @Column({ nullable: true })

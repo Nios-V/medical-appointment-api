@@ -7,20 +7,35 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from './entities/appointment.entity';
-import { DeleteResult, Repository, UpdateResult } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
+import { DoctorsService } from 'src/doctors/doctors.service';
+import { PatientsService } from 'src/patients/patients.service';
 
 @Injectable()
 export class AppointmentsService {
   constructor(
     @InjectRepository(Appointment)
     private appointmentRepository: Repository<Appointment>,
+    private readonly doctorsService: DoctorsService,
+    private readonly patientsService: PatientsService,
   ) {}
 
   async create(
     createAppointmentDto: CreateAppointmentDto,
   ): Promise<Appointment> {
-    const newAppointment =
-      this.appointmentRepository.create(createAppointmentDto);
+    const { doctorId, patientId, ...appointmentDetails } = createAppointmentDto;
+    const doctor = await this.doctorsService.findOne(doctorId);
+    if (!doctor) throw new NotFoundException(`Doctor Id ${doctorId} not found`);
+
+    const patient = await this.patientsService.findOne(patientId);
+    if (!patient)
+      throw new NotFoundException(`Patient Id ${doctorId} not found`);
+
+    const newAppointment = this.appointmentRepository.create({
+      ...appointmentDetails,
+      doctor: doctor,
+      patient: patient,
+    });
     return await this.appointmentRepository.save(newAppointment);
   }
 
