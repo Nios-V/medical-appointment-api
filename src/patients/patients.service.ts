@@ -4,6 +4,7 @@ import { UpdatePatientDto } from './dto/update-patient.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Patient } from './entities/patient.entity';
 import { DeleteResult, Repository } from 'typeorm';
+import moment from 'moment';
 
 @Injectable()
 export class PatientsService {
@@ -26,6 +27,25 @@ export class PatientsService {
     if (!patient)
       throw new NotFoundException(`Patient not found with ID ${id}`);
     return patient;
+  }
+
+  async isAvailableAt(patientId: string, scheduledAt: Date): Promise<boolean> {
+    const start = moment(scheduledAt);
+    const end = moment(scheduledAt).add(30, 'minutes');
+    const count = this.patientRepository
+      .createQueryBuilder('patient')
+      .leftJoin(
+        'patient.appointments',
+        'appointment',
+        'patientId = :patientId AND appointment.status = :status AND appointment.scheduledAt >= :start AND appointment.scheduledAt < :end',
+        {
+          patientId,
+          status: 'scheduled',
+          start: start.toDate(),
+          end: end.toDate(),
+        },
+      );
+    return (await count.getCount()) === 0;
   }
 
   async update(

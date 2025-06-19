@@ -4,6 +4,7 @@ import { UpdateDoctorDto } from './dto/update-doctor.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Doctor } from './entities/doctor.entity';
 import { DeleteResult, Repository } from 'typeorm';
+import moment from 'moment';
 
 @Injectable()
 export class DoctorsService {
@@ -40,6 +41,25 @@ export class DoctorsService {
       )
       .where('appointment.id IS NULL')
       .getMany();
+  }
+
+  async isAvailableAt(doctorId: string, scheduledAt: Date): Promise<boolean> {
+    const start = moment(scheduledAt);
+    const end = moment(scheduledAt).add(30, 'minutes');
+    const count = this.doctorRepository
+      .createQueryBuilder('doctor')
+      .leftJoin(
+        'doctor.appointments',
+        'appointment',
+        'doctorId = :doctorId AND appointment.status = :status AND appointment.scheduledAt >= :start AND appointment.scheduledAt < :end',
+        {
+          doctorId,
+          status: 'scheduled',
+          start: start.toDate(),
+          end: end.toDate(),
+        },
+      );
+    return (await count.getCount()) === 0;
   }
 
   async update(id: string, updateDoctorDto: UpdateDoctorDto): Promise<Doctor> {
