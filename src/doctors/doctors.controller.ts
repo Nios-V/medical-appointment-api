@@ -42,6 +42,15 @@ export class DoctorsController {
     return this.doctorsService.findAvailableAt(date);
   }
 
+  @Get('speciality/:speciality')
+  findBySpeciality(@Param('speciality') speciality: string) {
+    if (!speciality) {
+      throw new BadRequestException('Speciality is required');
+    }
+
+    return this.doctorsService.findBySpeciality(speciality);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.doctorsService.findOne(id);

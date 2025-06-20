@@ -62,6 +62,10 @@ export class DoctorsService {
     return (await count.getCount()) === 0;
   }
 
+  async findBySpeciality(speciality: string): Promise<Doctor[]> {
+    return this.doctorRepository.find({ where: { speciality } });
+  }
+
   async update(id: string, updateDoctorDto: UpdateDoctorDto): Promise<Doctor> {
     const doctor = await this.doctorRepository.findOne({ where: { id } });
     if (!doctor)
