@@ -37,6 +37,9 @@ export class Appointment {
   @Column({ default: true })
   active: boolean;
 
+  @Column({ default: false })
+  attended: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

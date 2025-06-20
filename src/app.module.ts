@@ -6,6 +6,9 @@ import { PatientsModule } from './patients/patients.module';
 import { AppointmentsModule } from './appointments/appointments.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CronSyncMissedAppointmentsService } from './crons/cron-sync-missed-appointments/cron-sync-missed-appointments.service';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CronsModule } from './crons/crons.module';
 
 @Module({
   imports: [
@@ -27,9 +30,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       }),
       inject: [ConfigService],
     }),
+    ScheduleModule.forRoot(),
     DoctorsModule,
     PatientsModule,
     AppointmentsModule,
+    CronsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

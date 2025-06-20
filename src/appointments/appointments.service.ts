@@ -7,7 +7,7 @@ import { CreateAppointmentDto } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Appointment } from './entities/appointment.entity';
-import { DeleteResult, Repository } from 'typeorm';
+import { DeleteResult, LessThan, Repository } from 'typeorm';
 import { DoctorsService } from 'src/doctors/doctors.service';
 import { PatientsService } from 'src/patients/patients.service';
 
@@ -50,6 +50,16 @@ export class AppointmentsService {
     if (!appointment)
       throw new NotFoundException(`Appointment not found with ID ${id}`);
     return appointment;
+  }
+
+  async findMissed(): Promise<Appointment[]> {
+    return await this.appointmentRepository.find({
+      where: {
+        scheduledAt: LessThan(new Date()),
+        attended: false,
+        status: 'scheduled',
+      },
+    });
   }
 
   async update(id: string, updateAppointmentDto: UpdateAppointmentDto) {
