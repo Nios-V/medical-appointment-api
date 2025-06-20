@@ -95,6 +95,11 @@ export class AppointmentsController {
     return this.appointmentsService.confirm(id);
   }
 
+  @Patch(':id/attend')
+  attend(@Param('id', new ParseUUIDPipe()) id: string) {
+    return this.appointmentsService.attend(id);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.appointmentsService.remove(id);

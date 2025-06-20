@@ -109,6 +109,30 @@ export class AppointmentsService {
     return this.appointmentRepository.save(appointment);
   }
 
+  async attend(id: string): Promise<Appointment> {
+    const appointment = await this.appointmentRepository.findOne({
+      where: { id },
+    });
+
+    if (!appointment)
+      throw new NotFoundException(
+        `Appointment with ID ${id} not found to attend`,
+      );
+
+    if (appointment.status === 'canceled')
+      throw new BadRequestException('Cannot attend a canceled appointment');
+
+    if (appointment.status === 'completed')
+      throw new BadRequestException('Cannot attend a completed appointment');
+
+    const updated = this.appointmentRepository.merge(appointment, {
+      attended: true,
+      status: 'completed',
+    });
+
+    return this.appointmentRepository.save(updated);
+  }
+
   async remove(id: string): Promise<DeleteResult> {
     const appointment = await this.appointmentRepository.findOne({
       where: { id },
